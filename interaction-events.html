@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head><meta charset="UTF-8">
+    <title>Vis Network | Events | Interaction events</title>
+
+    <script
+      type="text/javascript"
+      src="vis-network.min.js"
+    ></script>
+
+    <style type="text/css">
+      #mynetwork {
+        width: 600px;
+        height: 400px;
+        border: 1px solid lightgray;
+      }
+      #linkage_list{
+        border:1px solid black;
+        float:left;
+        margin-top:5px;
+        padding:5px;
+      }
+      #linkage_list p{
+        padding:1px;
+        margin:1px;
+      }
+      #linkage_list p:hover{
+        cursor:pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <p>
+      A little GUI for building glycan network maps. A step in the pipeling for parametrizing glycans in Martini 3. Exports a JSON file for input into polyply.
+    </p>
+    <input type='button' id='export_button' onclick='exportNetwork()' value='Export JSON'>
+    <div id="mynetwork"></div>
+    <!-- <img id = 'GlucoseButton' src='assets/glc.png' width=50 height=50> -->
+    <h2 id="glycan_form" style="display:none"></h2>
+    <pre id="eventSpanContent"></pre>
+    <img id = 'GlucoseButton' src='assets/glc.png' width=50 height=50>
+    <img id='GalactoseButton' src='assets/gal.png' width=50 height=50>
+  <img id='FucoseButton' src='assets/fuc.png' width=53 height=50>
+  <img id = 'GlcnacButton' src='assets/glcnac.png' width=50 height=50>
+  <img id='GalnacButton' src='assets/galnac.png' width=50 height=50>
+  <img id='SiaButton' src='assets/sia.png' width=50 height=53>
+  <div id="linkage_container">
+    <div id='linkage_list'>
+        <p id='a13'>&alpha;(1,3) linkage</p>
+        <p id='a14'>&alpha;(1,4) linkage</p>
+        <p id='a16'>&alpha;(1,6) linkage</p>
+        <p id='b13'>&beta;(1,3) linkage</p>
+        <p id='b14'>&beta;(1,4) linkage</p>
+        <p id='b16'>&beta;(1,6) linkage</p>
+    </div>
+    <div id='linkage_images'></div>
+  </div>
+
+    <script type="text/javascript">
+      var edgeMode = ''
+      var prevMode = ''
+      var counter = 0
+      var edgeCounter = 0
+      // create an array with nodes
+      var nodes = new vis.DataSet([
+      ]);
+
+      // create an array with edges
+      var edges = new vis.DataSet([
+      ]);
+
+      // create a network
+      var container = document.getElementById("mynetwork");
+      var data = {
+        nodes: nodes,
+        edges: edges,
+      };
+
+      var options = {
+        manipulation: {
+          enabled: true,
+          addNode:false,
+        },
+        physics:{
+          maxVelocity:10,
+          // repulsion:{
+          //   nodeDistance:10,
+          //   centralGravity:0.9,
+          // },
+        },
+      };
+
+      var network = new vis.Network(container, data, options);
+      function isString(str){
+        return /[a-z]/.test(str);
+      }
+      network.on("click", function (params) {
+         var nodeID = params.nodes[0]
+         var edgeID = params.edges[0]
+         var edge = edges.get(edgeID)
+         console.log('from node ID:'+edge.from)
+         console.log('to node ID: '+edge.to)        
+        if (typeof nodeID == 'number'){
+          console.log('node selected!')
+        }
+        if (edgeID){
+            console.log('edge selected!')
+            //var clickedEdge = this.body.edges[edgeID]
+            console.log(typeof edgeID)
+                if (edgeMode != ''){ //if edgemode has been selected
+                          console.log('the type of edge is: '+edgeMode)
+                          console.log('the current clicked edge ID is:'+edge.id)
+                          edges.update({id:edgeID, label: edgeMode})
+                          console.log(edges.get())
+                }
+                else{//linkage type has not been defined
+                    console.log('linkage type must be selected')
+                }
+          }
+        else{
+          console.log('no node selected')
+          }
+      });
+      network.on("doubleClick", function (params) {
+        var nodeID = params.nodes[0]
+        if (nodeID){
+          var clickedNode = this.body.nodes[nodeID]
+
+          console.log('clicked node: ',clickedNode.options.label)
+        }
+
+      });
+  var addGlu = document.getElementById("GlucoseButton");
+          addGlu.addEventListener("click", function() {
+              console.log(nodes)
+              nodes.add({id:counter ,label:"Glc",shape:"circle",size:20, font:'15px arial black',borderWidth:1})
+                var clicked = nodes.get(counter)
+                clicked.color = {border:'#000000',background:'#0090cc',highlight:{background:'#0090cc',border:'black'}}
+              nodes.update(clicked)
+              counter+=1
+              console.log(counter)
+    })
+      var addGal = document.getElementById("GalactoseButton");
+        addGal.addEventListener("click", function() {
+        console.log(nodes)
+          nodes.add({id:counter ,label:"Gal",shape:"circle",size:20, font:'15px arial black',borderWidth:1})
+          var clicked = nodes.get(counter)
+          clicked.color = {border:'#000000',background:'#ffd400',highlight:{background:'#ffd400',border:'black'}}
+          nodes.update(clicked)
+        counter+=1
+          console.log(counter)
+    })  
+        var addFuc = document.getElementById("FucoseButton");
+        addFuc.addEventListener("click", function() {
+        console.log(nodes)
+          nodes.add({id:counter ,label:"Fuc",shape:"triangle",size:15, font:'15px arial black',borderWidth:1,prop:'string'})
+          var clicked = nodes.get(counter)
+          clicked.color = {border:'#000000',background:'#ed1c24',highlight:{background:'#ed1c24',border:'black'}}
+          nodes.update(clicked)
+        counter+=1
+        var all_data = nodes.get() 
+          console.log(counter)
+          console.log(all_data)
+    })     
+
+
+    var addGalnac = document.getElementById("GalnacButton");
+        addGalnac.addEventListener("click", function() {
+        console.log(nodes)
+          nodes.add({id:counter ,label:"GalNAc",shape:"square",size:15, font:'15px arial black',borderWidth:1,prop:'string'})
+          var clicked = nodes.get(counter)
+          clicked.color = {border:'#000000',background:'#ffd400',highlight:{background:'#ffd400',border:'black'}}
+          nodes.update(clicked)
+        counter+=1
+        var all_data = nodes.get() 
+          console.log(counter)
+          console.log(all_data)
+    })  
+    var addGlcnac = document.getElementById("GlcnacButton");
+        addGlcnac.addEventListener("click", function() {
+        console.log(nodes)
+          nodes.add({id:counter ,label:"GlcNAc",shape:"square",size:15, font:'15px arial black',borderWidth:1,prop:'string'})
+          var clicked = nodes.get(counter)
+          clicked.color = {border:'#000000',background:'#0090cc',highlight:{background:'#0090cc',border:'black'}}
+          nodes.update(clicked)
+        counter+=1
+        var all_data = nodes.get() 
+          console.log(counter)
+          console.log(all_data)
+    }) 
+      var addSia = document.getElementById("SiaButton");
+        addSia.addEventListener("click", function() {
+        console.log(nodes)
+          nodes.add({id:counter ,label:"Sia",shape:"diamond",size:15, font:'15px arial black',borderWidth:1,prop:'string'})
+          var clicked = nodes.get(counter)
+          clicked.color = {border:'#000000',background:'#a54399',highlight:{background:'#a54399',border:'black'}}
+          nodes.update(clicked)
+        counter+=1
+        var all_data = nodes.get() 
+          console.log(counter)
+          console.log(all_data)
+    }) ;   
+
+
+    //// CHANGING EDGE MODES  ////////////////////////
+    function updateEdgeSelection(current,previous){ //takes div strings
+        var curr = document.getElementById(current)
+        if (previous){
+          var prev = document.getElementById(previous)
+          prevMode = previous
+          prev.style.backgroundColor = 'white'
+          prev.style.color = 'black'
+        }
+        edgeMode = current
+        curr.style.backgroundColor = "blue"
+        curr.style.color = 'white'
+        console.log('selected edgeMode: '+edgeMode)
+        //edge.add({label:edgeMode,})
+        //edgeCounter+1
+
+    }
+    var setA13 = document.getElementById("a13");
+    setA13.addEventListener("click", function() {
+      if (edgeMode != 'a13'){
+          updateEdgeSelection('a13',edgeMode)
+      }
+    }) ;
+    var setA14 = document.getElementById("a14");
+    setA14.addEventListener("click", function() {
+          if (edgeMode != 'a14'){
+            updateEdgeSelection('a14',edgeMode)          // this.style.backgroundColor 
+          }
+    }) ;
+    var setA16 = document.getElementById("a16");
+    setA16.addEventListener("click", function() {
+          if (edgeMode != 'a16'){
+            updateEdgeSelection('a16',edgeMode)          // this.style.backgroundColor 
+          }
+    }) ;
+    var setB16 = document.getElementById("b16");
+    setB16.addEventListener("click", function() {
+          if (edgeMode != 'b16'){
+            updateEdgeSelection('b16',edgeMode)          // this.style.backgroundColor 
+          }
+    }) ;
+    var setB13 = document.getElementById("b13");
+    setB13.addEventListener("click", function() {
+          if (edgeMode != 'b13'){
+            updateEdgeSelection('b13',edgeMode)          // this.style.backgroundColor 
+          }
+    }) ;
+    var setB14 = document.getElementById("b14");
+    setB14.addEventListener("click", function() {
+          if (edgeMode != 'b14'){
+            updateEdgeSelection('b14',edgeMode)          // this.style.backgroundColor 
+          }
+    }) ;
+   // ////////////////////////////////////////////
+
+      network.on("select", function (params) {
+        console.log("select Event:", params);
+      });
+      network.on("selectNode", function (params) {
+        console.log("selectNode Event:", params);
+      });
+      network.on("selectEdge", function (params) {
+        console.log("selectEdge Event:", params);
+      });
+      network.on("deselectNode", function (params) {
+        console.log("deselectNode Event:", params);
+      });
+      network.on("deselectEdge", function (params) {
+        console.log("deselectEdge Event:", params);
+      });
+////// export network 
+function exportNetwork(){
+  all_nodes = nodes.get()
+  all_edges = edges.get()
+  //console.log(all_edges)
+
+  //all_nodes.forEach(getIDs)
+ // var json_dict = objectToArray()
+
+  testObj = {"nodes":[],"linkages":[]}
+  var NodeList = objectToArray(all_nodes)
+  var EdgeList = objectToArray(all_edges)
+  //console.log(NodeList)
+
+  // var NodeList = objectToArray(nodes.get())
+  // var EdgeList = objectToArray(edges.get())
+   for (const node in NodeList){
+       console.log(NodeList[node]["label"])
+       resObj = {"resid":0,"seqid":0,"resname":''}
+       resObj.resid = parseInt(NodeList[node].id)+1
+       resObj.seqid = parseInt(NodeList[node].id)
+       resObj.resname = NodeList[node].label
+       testObj["nodes"].push(resObj)
+      //toExport[key].resname = toExport[key].label
+  //   //console.log(testObj)
+    }
+    console.log(testObj)
+    for (const edge in EdgeList){
+        edgeObj = {"source":0,"target":0,"linkage":''}
+        edgeObj.source = parseInt(EdgeList[edge].from)
+        edgeObj.target = parseInt(EdgeList[edge].to)
+        edgeObj.linkage = EdgeList[edge].label
+        testObj["linkages"].push(edgeObj)
+      }
+
+
+
+      //console.log(testObj)
+      console.log(JSON.stringify(testObj, undefined,2))
+    }
+  //   console.log(edge.label)
+  // }
+
+
+
+ // console.log(toExport)
+  //toExport.forEach(getLabels)
+  //console.log(JSON.stringify(json_dict,undefined,2))
+  //console.log(JSON.stringify(toExport,undefined,2))
+  //console.log(all_nodes)
+  // console.log(all_data)
+  // nodes.forEach(addConnections);
+  // nodes.forEach(addLabels)
+  // exportValue = JSON.stringify(nodes,undefined,2);
+  //console.log(exportValue)
+
+function objectToArray(obj){
+  return Object.keys(obj).map(function (key){
+    obj[key].id = key;
+    return obj[key]
+  })
+}
+function addConnections(elem,index){
+  elem.linkages = network.getConnectedNodes(index)
+}
+function getIDs(elem,index){
+  elem.id = elem.id
+  console.log(elem.id)
+    //console.log(elem.label)
+}
+
+
+    </script>
+  </body>
+</html>
