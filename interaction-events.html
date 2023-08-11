@@ -49,6 +49,9 @@
         margin-top:20px;
         margin-bottom:20px;
       }
+      #proteinButton{
+        background-color:gray;
+      }
     </style>
   </head>
   <body>
@@ -73,6 +76,7 @@
     <img id = 'GlcnacButton' src='assets/glcnac.png' width=50 height=50>
     <img id='GalnacButton' src='assets/galnac.png' width=50 height=50>
     <img id='SiaButton' src='assets/sia.png' width=50 height=53>
+    <img id='ProtButton' src='assets/prot.png' width=50 height=53>
   </div>
   <div id="linkage_container">
     <div id='linkage_list'>
@@ -91,7 +95,6 @@
       var edgeMode = ''
       var prevMode = ''
       var counter = 0
-      var edgeCounter = 0
       // create an array with nodes
       var nodes = new vis.DataSet([
       ]);
@@ -129,27 +132,38 @@
          var nodeID = params.nodes[0]
          var edgeID = params.edges[0]
          var edge = edges.get(edgeID)
-         console.log('from node ID:'+edge.from)
-         console.log('to node ID: '+edge.to)        
+         var all_nodes = nodes.get()
+         var this_node = nodes.get(nodeID)
+         console.log('node object: ')
+         console.log(this_node)
+         // console.log('node object expanded: '+objectToArray(nodes.get(nodeID)))
+         console.log('all nodes:'+ nodes.get())
+         // console.log('node id: '+nodeID)
+         // nodelist = objectToArray(nodes.get())
+         // console.log('all nodes: ')
+         // for (node in nodelist){
+         //  console.log('node: '+nodelist[node])
+         // }
+         // console.log('from node ID:'+edge.from)
+         // console.log('to node ID: '+edge.to)        
         if (typeof nodeID == 'number'){
-          console.log('node selected!')
+          // console.log('node selected!')
         }
         if (edgeID){
-            console.log('edge selected!')
-            //var clickedEdge = this.body.edges[edgeID]
-            console.log(typeof edgeID)
+            // console.log('edge selected!')
+            // //var clickedEdge = this.body.edges[edgeID]
+            // console.log(typeof edgeID)
                 if (edgeMode != ''){ //if edgemode has been selected
                           console.log('the type of edge is: '+edgeMode)
-                          console.log('the current clicked edge ID is:'+edge.id)
                           edges.update({id:edgeID, label: edgeMode})
                           console.log(edges.get())
                 }
                 else{//linkage type has not been defined
-                    console.log('linkage type must be selected')
+                    // console.log('linkage type must be selected')
                 }
           }
         else{
-          console.log('no node selected')
+          // console.log('no node selected')
           }
       });
       network.on("doubleClick", function (params) {
@@ -157,7 +171,8 @@
         if (nodeID){
           var clickedNode = this.body.nodes[nodeID]
 
-          console.log('clicked node: ',clickedNode.options.label)
+          console.log('clicked node resname: ',clickedNode.options.label)
+          console.log('clicked node id: ',clickedNode.options.id)
         }
 
       });
@@ -225,6 +240,18 @@
           nodes.add({id:counter ,label:"Sia",shape:"diamond",size:15, font:'15px arial black',borderWidth:1,prop:'string'})
           var clicked = nodes.get(counter)
           clicked.color = {border:'#000000',background:'#a54399',highlight:{background:'#a54399',border:'black'}}
+          nodes.update(clicked)
+        counter+=1
+        var all_data = nodes.get() 
+          console.log(counter)
+          console.log(all_data)
+    }) ;   
+        var addProt = document.getElementById("ProtButton");
+        addProt.addEventListener("click", function() {
+        console.log(nodes)
+          nodes.add({id:counter ,label:"Prot",shape:"ellipse",size:15, font:'15px arial black',borderWidth:1,prop:'string'})
+          var clicked = nodes.get(counter)
+          clicked.color = {border:'#000000',background:'#d3d3d3',highlight:{background:'#d3d3d3',border:'black'}}
           nodes.update(clicked)
         counter+=1
         var all_data = nodes.get() 
@@ -315,6 +342,8 @@ function exportNetwork(){
   testObj = {"nodes":[],"links":[]}
   var NodeList = objectToArray(all_nodes)
   var EdgeList = objectToArray(all_edges)
+  console.log(NodeList)
+  console.log(EdgeList)
   //console.log(NodeList)
 
   // var NodeList = objectToArray(nodes.get())
@@ -322,7 +351,7 @@ function exportNetwork(){
    for (const node in NodeList){
        console.log(NodeList[node]["label"])
        resObj = {"resid":0,"seqid":0,"resname":''}
-       resObj.resid = parseInt(NodeList[node].id)+1
+       resObj.resid = parseInt(NodeList[node].id)
        resObj.seqid = parseInt(NodeList[node].id)
        resObj.resname = NodeList[node].label
        testObj["nodes"].push(resObj)
@@ -332,8 +361,8 @@ function exportNetwork(){
     console.log(testObj)
     for (const edge in EdgeList){
         edgeObj = {"source":0,"target":0,"linktype":''}
-        edgeObj.source = parseInt(EdgeList[edge].from)
-        edgeObj.target = parseInt(EdgeList[edge].to)
+        edgeObj.source = nodes.get(parseInt(EdgeList[edge].from)).id
+        edgeObj.target = nodes.get(parseInt((EdgeList[edge].to))).id
         edgeObj.linktype = EdgeList[edge].label
         testObj["links"].push(edgeObj)
       }
