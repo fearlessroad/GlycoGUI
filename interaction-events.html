@@ -11,32 +11,40 @@
     <style type="text/css">
       #mynetwork {
         width: 600px;
+        width:60%;
         height: 400px;
         border: 1px solid lightgray;
+        margin-right:5px;
+/*        display:inline-block;*/
         float:left;
-        margin:20px;
+/*        margin:20px;*/
       }
       #populate_json{
         /*width:25%;*/
-        width:40%;
+        width:200px;
         /*display:block;*/
-        background-color:lightgrey;
-        margin:20px;
+        /*background-color:lightgrey;*/
+/*        padding:10px;*/
+        padding-top:10px;
         padding-left:10px;
         padding-right:10px;
         overflow:auto;
         overflow-y:scroll;
-        height:300px;
+        height:364px;
 /*        display:block;*/
-/*        border:1px solid grey;*/
-        clear:both;
+        border:1px solid grey;*/
+        float:left;
+/*        clear:both;*/
       }
       #linkage_list{
         border:1px solid black;
         display:inline-block;
-        margin-top:5px;
+        /*margin-top:5px;*/
         margin-bottom:5px;
         padding:5px;
+      }
+      #linkage_container{
+        padding:1px;
       }
       #linkage_list p{
         padding:1px;
@@ -45,38 +53,77 @@
       #linkage_list p:hover{
         cursor:pointer;
       }
-      #export_button{
-        margin-top:20px;
-        margin-bottom:20px;
+      .export_button{
+/*        width:172px;*/
+/*        background-color:lightgrey;
+        width:90px;*/
+        margin-left:0px;
+        margin-bottom:5px;
+/*        border-radius:solid lightblue 2px;*/
+/*        margin-top:20px;*/
+      }
+      .export_button:hover{
+        cursor:pointer;
       }
       #proteinButton{
         background-color:gray;
       }
+      .node-types {
+        margin:5px;
+/*        width:;*/
+      }
+      .node-types:hover{
+        cursor:pointer;
+      }
+      #button_undo,
+      #button_redo {
+/*        position: relative;*/
+/*        float:left;*/
+        display: inline-block;
+        padding-left: 6px;
+        padding-right: 6px;
+        padding-top: 1px;
+        padding-bottom: 1px;
+        color: #878787;
+        cursor: pointer;
+        width:50px;
+      }
+
+      #button_undo:hover,
+      #button_redo:hover {
+        background-color: #dadada;
+      }
+
+/*      #export_section{
+        float:left;
+        /*clear:both;*/
+/*      }*
+
     </style>
   </head>
   <body>
     <p>
       A little visjs GUI for building glycan network maps. A step in the pipeline for parametrizing glycans in Martini 3. Exports a JSON file for input into polyply.
     </p>
-    <div id='box'>
       <div id="mynetwork"></div>
-  </div>
+            <input type='button' class='export_button' onclick='exportNetwork()' value='Export JSON'>
+             <input type='button' class='export_button' value='Save PNG' onclick='document.getElementById("canvasImg").click();'><a id="canvasImg" download="GlycoGUI_network"></a>    <input type='button' class='export_button' onclick='location.reload()' value='Start Over'>
+      <div id='populate_json'><pre><code>JSON Exports Here</code></pre></div>
   <div>
 
-    <input type='button' id='export_button' onclick='exportNetwork()' value='Export JSON'>
   </div>
     
     <!-- <img id = 'GlucoseButton' src='assets/glc.png' width=50 height=50> -->
     <!-- <h2 id="glycan_form" style="display:none"></h2>
     <pre id="eventSpanContent"></pre> -->
    <div> 
-    <img id = 'GlucoseButton' src='assets/glc.png' width=50 height=50>
-    <img id='GalactoseButton' src='assets/gal.png' width=50 height=50>
-    <img id='FucoseButton' src='assets/fuc.png' width=53 height=50>
-    <img id = 'GlcnacButton' src='assets/glcnac.png' width=50 height=50>
-    <img id='GalnacButton' src='assets/galnac.png' width=50 height=50>
-    <img id='SiaButton' src='assets/sia.png' width=50 height=53>
-    <img id='ProtButton' src='assets/prot.png' width=50 height=53>
+    <img id = 'GlucoseButton' class='node-types' src='assets/glc.png' width=50 height=50>
+    <img id='GalactoseButton' class='node-types' src='assets/gal.png' width=50 height=50>
+    <img id='FucoseButton' class='node-types' src='assets/fuc.png' width=53 height=50>
+    <img id = 'GlcnacButton' class='node-types' src='assets/glcnac.png' width=50 height=50>
+    <img id='GalnacButton' class='node-types' src='assets/galnac.png' width=50 height=50>
+    <img id='SiaButton' class='node-types' src='assets/sia.png' width=50 height=53>
+    <img id='ProtButton' class='node-types' src='assets/prot.png' width=50 height=53>
   </div>
   <div id="linkage_container">
     <div id='linkage_list'>
@@ -87,8 +134,7 @@
         <p id='b14'>&beta;(1,4) linkage</p>
         <p id='b16'>&beta;(1,6) linkage</p>
     </div>
-    <div id='linkage_images'></div>
-          <div id='populate_json'><pre><code>Javascript Exports Here</code></pre></div>
+    <!-- <div id='linkage_images'></div> -->
   </div>
 
     <script type="text/javascript">
@@ -122,6 +168,7 @@
           //   centralGravity:0.9,
           // },
         },
+        edges:{arrows:{to:true}},
       };
 
       var network = new vis.Network(container, data, options);
@@ -313,6 +360,9 @@
             updateEdgeSelection('b14',edgeMode)          // this.style.backgroundColor 
           }
     }) ;
+
+
+
    // ////////////////////////////////////////////
 
       network.on("select", function (params) {
@@ -404,8 +454,16 @@ function getIDs(elem,index){
   console.log(elem.id)
     //console.log(elem.label)
 }
+network.on("afterDrawing", function (ctx) {
+    var dataURL = ctx.canvas.toDataURL();
+    document.getElementById('canvasImg').href = dataURL;
+  });
+function destroyNetwork(){
+  network.destroy();
+}
 
 
     </script>
+      <link href="https://use.fontawesome.com/releases/v5.0.6/css/all.css" rel="stylesheet">
   </body>
 </html>
